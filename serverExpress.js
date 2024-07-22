@@ -2,13 +2,19 @@ import express from 'express'
 import { __dirname } from './utils.js';
 import handlebars from 'express-handlebars'
 import { Server, Socket } from 'socket.io';
-
 import productRouter from './src/routes/product-router.js';
 import cartRouter from './src/routes/cart-router.js';
 import viewsRouter from './src/routes/views-router.js'
-
 import { ProductMgr } from './src/daos/fs/productManager.js';
 import { initMongoDB } from './src/db/database.js';
+//Backend2
+import authRouter from './src/routes/auth.routes.js';
+import userRouter from './src/routes/user.routes.js';
+import { initializePassport } from './src/config/passport.config.js';
+import passport from 'passport';
+import cookieParser from 'cookie-parser';
+
+
 
 //Conexion con DB Mongo
 initMongoDB()
@@ -21,6 +27,7 @@ const app = express();
 app.use(express.json()) //Middleware para entender JSON que vine del Body de los req
 app.use(express.urlencoded({extended:true})) //Reconoce Parametros de URL
 app.use(express.static(`${__dirname}/public`))
+app.use(cookieParser())
 
 const httpServer = app.listen(PORT, ()=>{console.log(`Servidor iniciado en Puerto ${PORT}`);});
 
@@ -28,7 +35,12 @@ const httpServer = app.listen(PORT, ()=>{console.log(`Servidor iniciado en Puert
 app.use('/api/products',productRouter)
 app.use('/api/carts',cartRouter)
 app.use('/',viewsRouter) //Vista de Handlebars
+app.use('/api/auth', authRouter)
+app.use('/api/users', userRouter)
 
+//Passport
+initializePassport()
+app.use(passport.initialize())
 
 //Handlebars
 app.engine('handlebars', handlebars.engine())
