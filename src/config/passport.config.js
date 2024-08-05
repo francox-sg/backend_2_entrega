@@ -13,10 +13,10 @@ export const initializePassport = () =>{
 
 
     //Estrategia de Login
-    passport.use(
-        "login",
+    passport.use( "login",
         new LocalStrategy({usernameField:"email", passReqToCallback: true}, async (req, email, password, done) =>{
             try {
+                console.log("PASSPORT LOGIN");
                 const user = await userModel.findOne({email})
                 
                 if(!user){

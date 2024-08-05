@@ -7,7 +7,7 @@ import { generateToken } from "../utils/jwt.js";
 const router= Router();
 
 router.post("/login", passport.authenticate("login", {session:false, failureRedirect: "/api/auth/login"}), async (req,res)=>{
-
+    console.log("Router LOGIN");
     
     if(!req.user){
         return res.status(401).json({ error: "Usuario No Autorizado"})
