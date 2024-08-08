@@ -3,11 +3,18 @@ import { userModel } from "../daos/mongodb/models/user.model.js";
 import { createHash } from "../utils/hash.js";
 import passport from "passport";
 import { generateToken } from "../utils/jwt.js";
+import { authorizationRole } from "../middlewares/auth.middleware.js";
+import { resUserDto } from "../dtos/user.dto.js";
+import { validate } from "../middlewares/validation.middleware.js";
+import { authDto } from "../dtos/auth.dto.js";
+import { userDto } from "../dtos/user.dto.js";
 
 const router= Router();
 
-router.post("/login", passport.authenticate("login", {session:false, failureRedirect: "/api/auth/login"}), async (req,res)=>{
-    console.log("Router LOGIN");
+/* ----------------------------- AUTH ENDPOINTS ----------------------------- */
+
+//Login
+router.post("/login", validate(authDto), passport.authenticate("login", {session:false, failureRedirect: "/api/auth/login"}), authorizationRole(['admin','user']), async (req,res)=>{
     
     if(!req.user){
         return res.status(401).json({ error: "Usuario No Autorizado"})
@@ -28,7 +35,9 @@ router.post("/login", passport.authenticate("login", {session:false, failureRedi
     res.status(200).json({token, message:"Login Exitoso!"})
 })
 
-router.post("/register", async (req, res)=>{
+
+//Registro
+router.post("/register", validate(userDto), async (req, res)=>{
     const {email, first_name, last_name, age, password, role} = req.body;
 
     if(!email || !first_name || !last_name || !age || !password ){
@@ -36,8 +45,6 @@ router.post("/register", async (req, res)=>{
     }
     
     try {
-        console.log("Llega al try");
-        
         const newUser = {
             email,
             first_name,
@@ -56,15 +63,18 @@ router.post("/register", async (req, res)=>{
     }
 })
 
-
-router.get('/current', passport.authenticate("jwt",{session: false}), (req, res)=>{
+//Current User
+router.get('/current', passport.authenticate("jwt",{session: false}), authorizationRole(['admin','user']), (req, res)=>{
     console.log(req.user);
+
+    
     res.status(200).json({
         message:"Bienvenido",
-        user: req.user
+        user: resUserDto(req.user)
     })
 })
 
+//Logout
 router.get('/logout',  (req, res)=>{
     res.clearCookie("token")
     res.status(200).json({
@@ -72,11 +82,14 @@ router.get('/logout',  (req, res)=>{
     })
 })
 
+
+
 /* ----------------------------- Error Endpoints ---------------------------- */
 
 router.get("/login", (req, res)=>{
     res.status(401).json({ error: "No Autorizado"})
 })
+
 
 
 export default router

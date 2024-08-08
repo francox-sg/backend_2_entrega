@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
+import 'dotenv/config' 
 
-const PRIVATE_KEY = "s3cr3t";
+const PRIVATE_KEY = process.env.JWT_SECRET;
 
 export function generateToken(payload) {
 

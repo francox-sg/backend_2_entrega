@@ -1,1 +1,2 @@
 MONGO_URL = 'mongodb+srv://franco:franquito@clusterfranco.diyuqnj.mongodb.net/entregaFinal?retryWrites=true&w=majority&appName=ClusterFranco'
+JWT_SECRET='s3cr3t'

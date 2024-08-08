@@ -3,6 +3,8 @@ import { userModel } from "../daos/mongodb/models/user.model.js";
 
 const router= Router();
 
+/* ----------------------------- USER ENDPOINTS ----------------------------- */
+
 //Obtener TODOS los usuarios
 router.get('/', async (req, res)=>{
     try {
