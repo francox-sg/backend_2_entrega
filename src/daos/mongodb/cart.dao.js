@@ -31,6 +31,7 @@ class CartManager{
 
     //Metodo Elimina Producto de Cart
     async removeProductOfCartById(cartId, prodId){
+        
         return await CartModel.findByIdAndUpdate(
             { _id: cartId },
             { $pull: { products: { product: prodId } } },
@@ -120,14 +121,13 @@ class CartManager{
 
     }
     
-    
-    
-        //Metodo Borrar todos los productos de cart
-        async deleteAllProductsOfCart(cartId){
-            
-            return await CartModel.findByIdAndUpdate(cartId,{$set: {products: []}},  {new:true})
-            
-        }
+
+    //Metodo Borrar todos los productos de cart
+    async deleteAllProductsOfCart(cartId){
+        
+        return await CartModel.findByIdAndUpdate(cartId,{$set: {products: []}},  {new:true})
+        
+    }
         
     
     

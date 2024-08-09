@@ -19,7 +19,7 @@ class UserManager{
     //Metodo Devuelve user por code
     async getUserByEmail(email){
         
-        return await userModel.find({email: email})
+        return await userModel.find({email})
     }
     
 }

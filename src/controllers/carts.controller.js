@@ -1,5 +1,6 @@
 import * as services from '../services/carts.service.js'
 import { getProductById, updateProduct } from '../services/products.service.js';
+import { resTicketDto } from '../dtos/ticket.dto.js';
 import { v4 as uuidv4 } from 'uuid';
 
 export const addCart = async(req, res)=>{
@@ -133,7 +134,7 @@ export const purchase = async (req, res)=>{
     const {cid} = req.params;
 
     try {
-        console.log("CONTROLLER PURCHASE");
+        
         
         //Verificar Existencia de Carrito
         const cart = await services.getCartProductsById(cid)
@@ -141,12 +142,6 @@ export const purchase = async (req, res)=>{
         if(!cart){
             return res.status(400).send("Carrito no encontrado")
         }
-        console.log("CONTROLLER PURCHASE");
-
-        
-        console.log(cart.products);
-        
-        //return res.status(200).json(cart.products)
         
         let ticketProducts = []
         let productsOutOfStock=[]
@@ -154,17 +149,27 @@ export const purchase = async (req, res)=>{
 
         //ForEach de cart.products
         await Promise.allSettled(
+
         cart.products.map( async (product)=>{
             const dbProduct = await getProductById(product.product)
+
+            //Existe el Producto
             if(dbProduct){
-                console.log("MAP - Init Product:",product);
-                console.log("dbProduct:", dbProduct);
                 
                 if(product.quantity <= dbProduct.stock){
                     
+                    //Decremento de Stock de Producto
                     await updateProduct(product.product, {stock: dbProduct.stock - product.quantity})
+                    
+                    //Agrego a array de productos en ticket
                     ticketProducts.push(product)
-                    TotalPurchase += product.quantity*dbProduct.price;
+                    
+                    //Sumo al total
+                    TotalPurchase += product.quantity * dbProduct.price;
+                    
+                    //Borro Producto del Carrito
+                    await services.removeProductOfCartById(cid, product.product._id)
+
                 }else{
                     productsOutOfStock.push(product)
                 }
@@ -173,36 +178,37 @@ export const purchase = async (req, res)=>{
                 productsOutOfStock.push(product)
                 
             }
-            console.log("MAP - Finish Product:",product);
-            
         })
         )
 
-
-        console.log("ticket:", ticketProducts);
-        console.log("productsOutOfStock:", productsOutOfStock);
-
-       /*  console.log("PRE Ticket");
-
+        //Busqueda de User por Email
         const userComplete = await services.getUserByEmail(req.user.email)
-        console.log("User Complete",userComplete); */
+
+        if(userComplete ==null){
+            return res.status(400).send("Usuario Inexistente")
+        }
         
-        
+        //Generacion de Codigo Unico
         const code = uuidv4();
+
+        //Generacion de Ticket a guardar en DB
         const ticket ={
             code: code,
             amount: TotalPurchase,
-            purchaser: req.user.email
+            purchaser: req.user.email,
+            purchaserId: userComplete[0]._id
         }
-        console.log(req.user);
-        
-        console.log("PRE LOG Ticket");
-        console.log("Ticket", ticket);
 
         const ticketResponse = await services.addTicket(ticket)
-        console.log(ticketResponse);
-        
-        return res.status(200).json({ ticket: ticketResponse, productOutOfStock:productsOutOfStock })
+
+        if(ticketResponse!=null){
+            console.log(ticketResponse);
+            
+            return res.status(200).json({ ticket: resTicketDto(ticketResponse[0]), ticketProducts: ticketProducts ,productOutOfStock:productsOutOfStock })
+        }else{
+            
+            return res.status(400).send("No fue posible generar el ticket")
+        }
 
 
     } catch (error) {
