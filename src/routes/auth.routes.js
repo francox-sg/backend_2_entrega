@@ -8,6 +8,7 @@ import { resUserDto } from "../dtos/user.dto.js";
 import { validate } from "../middlewares/validation.middleware.js";
 import { authDto } from "../dtos/auth.dto.js";
 import { userDto } from "../dtos/user.dto.js";
+import { mailService } from "../services/mail.service.js";
 
 const router= Router();
 
@@ -55,6 +56,9 @@ router.post("/register", validate(userDto), async (req, res)=>{
         }
         console.log(newUser);
         const response = await userModel.create(newUser)
+
+        //Envio de mail de Bienvenida
+        await mailService.sendMail({to: email, subject: "Bienvenido", type: "welcome", name: first_name})
 
         res.status(200).json(response)
         
