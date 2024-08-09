@@ -1,2 +1,6 @@
-MONGO_URL = 'mongodb+srv://franco:franquito@clusterfranco.diyuqnj.mongodb.net/entregaFinal?retryWrites=true&w=majority&appName=ClusterFranco'
+MONGO_URL = 
 JWT_SECRET='s3cr3t'
+MAILER_HOST='smtp.gmail.com'
+MAILER_PORT=587
+MAILER_USERNAME=
+MAILER_PASSWORD=
