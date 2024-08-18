@@ -68,13 +68,12 @@ router.post("/register", validate(userDto), async (req, res)=>{
 })
 
 //Current User
-router.get('/current', passport.authenticate("jwt",{session: false}), authorizationRole(['admin','user']), (req, res)=>{
+router.get('/current', passport.authenticate("jwt",{session: false}), authorizationRole(['admin','user']), async (req, res)=>{
     console.log(req.user);
-
     
     res.status(200).json({
         message:"Bienvenido",
-        user: resUserDto(req.user)
+        user: await resUserDto(req.user)
     })
 })
 

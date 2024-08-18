@@ -3,10 +3,27 @@ import { getProductById, updateProduct } from '../services/products.service.js';
 import { resTicketDto } from '../dtos/ticket.dto.js';
 import { v4 as uuidv4 } from 'uuid';
 
+
 export const addCart = async(req, res)=>{
+
+    const user= req.user
+    
+    
+    const dbuser = await services.getUserByEmail(user.email)
+    
+    
     try{
         
-        res.status(200).json(await services.addCart()) 
+        //Verificar si el Usuario ya posee un cart
+        if(dbuser[0].cart){
+            return res.status(404).json({message:`El Usuario ya posee el cart ${dbuser[0].cart} `})
+        }
+
+        const newCart = await services.addCart()
+
+        const userUpdated = await services.addCartToUser(user.email, newCart._id)
+
+        res.status(200).json({message: `Se creo un nuevo cart para el Usuario ${userUpdated.email}`, cart:newCart}) 
         
     }
     catch(error){
@@ -151,6 +168,7 @@ export const purchase = async (req, res)=>{
         await Promise.allSettled(
 
         cart.products.map( async (product)=>{
+            
             const dbProduct = await getProductById(product.product)
 
             //Existe el Producto

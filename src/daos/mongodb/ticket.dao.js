@@ -14,8 +14,12 @@ class TicketManager{
     async addTicket(ticket){
         
         const resp = await TicketModel.create(ticket)
+        
         return  await this.getTicketByCode(ticket.code)
     }
+
+
+
 
     //Metodo Devuelve ticket por code
     async getTicketByCode(ticketCode){
